@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+echo 'set superusers="admin"'
+echo 'password_pbkdf2 admin __GRUB_PWD__'

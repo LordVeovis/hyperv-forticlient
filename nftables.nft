@@ -1,0 +1,30 @@
+#!/usr/sbin/nft -f
+
+table ip firewall
+flush table ip firewall
+
+define IF_HOME = eth0
+define IF_VPN = ppp0
+define NET_CORP = 10.40.240.0/20
+
+table ip firewall {
+    chain incoming {
+        type filter hook input priority filter; policy drop;
+        ct state established,related counter accept
+        ct state invalid counter drop
+    }
+
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+        ct state established,related counter accept
+        ct state invalid counter drop
+        iifname $IF_HOME oifname $IF_VPN ip daddr $NET_CORP icmp type { echo-request } counter accept
+        iifname $IF_HOME oifname $IF_VPN ip daddr $NET_CORP tcp dport 3389 counter accept
+        iifname $IF_HOME oifname $IF_VPN ip daddr $NET_CORP udp dport 3389 counter accept
+    }
+
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        oifname $IF_VPN counter masquerade
+    }
+}
