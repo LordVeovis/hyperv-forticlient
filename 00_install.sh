@@ -48,7 +48,7 @@ sed -i -e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"$/ cryptkey\"/' /mnt/etc/default/g
 touch /mnt/crypto_keyfile.bin
 chmod 600 /mnt/crypto_keyfile.bin
 dd bs=512 count=4 if=/dev/urandom of=/mnt/crypto_keyfile.bin
-echo "__LUKS__" | cryptsetup luksAddKey --pbkdf-memory=32768 --pbkdf-parallel=2 /dev/sda2 /mnt/crypto_keyfile.bin
+echo "__LUKS__" | cryptsetup luksAddKey --pbkdf-memory=256 --pbkdf-parallel=2 /dev/sda2 /mnt/crypto_keyfile.bin
 mkinitfs -c /mnt/etc/mkinitfs/mkinitfs.conf -b /mnt/ $(ls /mnt/lib/modules/)
 
 mount -t proc /proc /mnt/proc
