@@ -5,7 +5,7 @@ setup-timezone Europe/Paris
 setup-keymap fr fr
 
 apk add --no-cache sfdisk lvm2 cryptsetup e2fsprogs parted mkinitfs dosfstools blkid
-parted -a opt --script /dev/sda \
+parted --align optimal --script /dev/sda \
     mklabel gpt \
     mkpart primary fat32 0% 100M \
     name 1 esp \
@@ -63,6 +63,7 @@ cp /tmp/10-bashrc.sh /mnt/tmp/
 cp /tmp/05_users /mnt/tmp/
 chroot /mnt /tmp/01_chroot.sh
 
+echo 'Unmounting partitions'
 umount -l /mnt/dev
 umount -l /mnt/proc
 umount -l /mnt/sys

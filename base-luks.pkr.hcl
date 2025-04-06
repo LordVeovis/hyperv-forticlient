@@ -61,10 +61,8 @@ source "hyperv-iso" "vm" {
   ssh_password          = "${local.packer_pwd}"
   ssh_disable_agent_forwarding = true
   shutdown_command      = "doas poweroff"
-  boot_wait             = "6s"
+  boot_wait             = "5s"
   boot_keygroup_interval = "20ms"
-  #keep_registered       = true
-  #ssh_timeout           = "1h"
   boot_command          = [
     "root<enter><wait>",
     "setup-interfaces -ar<enter><wait2>",
