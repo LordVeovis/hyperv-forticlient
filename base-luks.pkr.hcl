@@ -46,8 +46,8 @@ local "packer_pwd" {
 }
 
 source "hyperv-iso" "vm" {
-  iso_url               = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-virt-3.21.2-x86_64.iso"
-  iso_checksum          = "sha256:e877549fb113ba93f89f3755742f3e5178ae66fb345bf6a74a9ddbe1e8bd2ec6"
+  iso_url               = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-virt-3.21.3-x86_64.iso"
+  iso_checksum          = "sha256:f28171c35bbf623aa3cbaec4b8b29297f13095b892c1a283b15970f7eb490f2d"
   enable_dynamic_memory = false
   enable_secure_boot    = false
   cpus                  = "2"
