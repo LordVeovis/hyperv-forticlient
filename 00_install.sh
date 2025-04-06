@@ -7,13 +7,13 @@ setup-keymap fr fr
 apk add --no-cache sfdisk lvm2 cryptsetup e2fsprogs parted mkinitfs dosfstools blkid
 parted -a opt --script /dev/sda \
     mklabel gpt \
-    mkpart primary fat32 0% 200M \
+    mkpart primary fat32 0% 100M \
     name 1 esp \
     set 1 esp on \
-    mkpart primary ext4 200M 100% \
+    mkpart primary ext4 100M 100% \
     name 2 crypto-luks
 
-dd if=/dev/urandom of=/dev/sda2 bs=1M count=16
+dd if=/dev/urandom of=/dev/sda2 bs=1M count=1
 
 #"cryptsetup -vq -c aes-xts-plain64 -s 256 --hash sha512 --pbkdf argon2id --pbkdf-force-iterations 4 --pbkdf-memory 65536 --pbkdf-parallel 4 --use-random luksFormat /dev/sda2
 # GRUB does not support argon2 and by default the sha512 module is not loaded
@@ -23,7 +23,7 @@ echo "__LUKS__" | cryptsetup open /dev/sda2 lvmcrypt
 
 pvcreate /dev/mapper/lvmcrypt
 vgcreate vg0 /dev/mapper/lvmcrypt
-lvcreate -L 2G vg0 -n boot
+lvcreate -L 64M vg0 -n boot
 lvcreate -l 100%FREE vg0 -n root
 lvscan
 

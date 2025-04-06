@@ -52,7 +52,7 @@ source "hyperv-iso" "vm" {
   enable_secure_boot    = false
   cpus                  = "2"
   memory                = "256"
-  disk_size             = "8192"
+  disk_size             = "512"
   generation            = "2"
   switch_name           = "Default Switch"
   vm_name               = "packer-fortress"
