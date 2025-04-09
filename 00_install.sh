@@ -18,7 +18,7 @@ dd if=/dev/urandom of=/dev/sda2 bs=1M count=1
 #"cryptsetup -vq -c aes-xts-plain64 -s 256 --hash sha512 --pbkdf argon2id --pbkdf-force-iterations 4 --pbkdf-memory 65536 --pbkdf-parallel 4 --use-random luksFormat /dev/sda2
 # GRUB does not support argon2 and by default the sha512 module is not loaded
 # https://www.gnu.org/software/grub/manual/grub/grub.pdf page 82
-echo "__LUKS__" | cryptsetup -vq -c aes-xts-plain64 -s 256 --hash sha256 --pbkdf pbkdf2 --use-random luksFormat /dev/sda2
+echo "__LUKS__" | cryptsetup -vq -c aes-xts-plain64 -s 256 --hash sha256 --pbkdf pbkdf2 --iter-time 300 --use-random luksFormat /dev/sda2
 echo "__LUKS__" | cryptsetup open /dev/sda2 lvmcrypt
 
 pvcreate /dev/mapper/lvmcrypt
