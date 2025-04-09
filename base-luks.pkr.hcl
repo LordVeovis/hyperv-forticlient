@@ -88,6 +88,10 @@ source "hyperv-iso" "vm" {
 build {
   sources = ["sources.hyperv-iso.vm"]
 
+  provisioner "shell-local" {
+    command = "pwsh -nol -Command \"& {Set-VMNetworkAdapter -VMName ${var.vm_name} -DhcpGuard On -RouterGuard On}\""
+  }
+
   # copy files to the image
   provisioner "file" {
     sources = [
