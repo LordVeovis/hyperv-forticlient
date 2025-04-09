@@ -74,7 +74,7 @@ source "hyperv-iso" "vm" {
     "root<enter><wait>",
     "setup-interfaces -ar<enter><wait2>",
     "setup-ntp chrony<enter><wait6>",
-    "setup-apkrepos -1<enter><wait>",
+    "setup-apkrepos -1c<enter><wait>",
     "setup-sshd openssh<enter><wait>",
     "adduser packer<enter><wait>",
     "${local.packer_pwd}<enter><wait>",

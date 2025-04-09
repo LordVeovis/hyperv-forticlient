@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 source /etc/profile
 export PS1="[chroot] $PS1"
 
@@ -10,14 +12,14 @@ install -m 0755 /tmp/05_users /etc/grub.d/05_users
 sed -i -e 's/\(title.*CLASS\}\)/\1 --unrestricted/' /etc/grub.d/10_linux
 grub-mkconfig -o /boot/grub/grub.cfg
 
-apk add virt-what
+apk add --no-cache virt-what
 # Hyper-V
-if "$(virt-what)" == 'hyperv'; then
+if [ "$(virt-what)" == 'hyperv' ]; then
     /usr/libexec/rc/bin/einfo Enabling Hyper-V guest tools
     apk add --no-cache hvtools
-    rc-service hv_fcopy_daemon start
-    rc-service hv_kvp_daemon start
-    rc-service hv_vss_daemon start
+    #rc-update add hv_fcopy_daemon default
+    rc-update add hv_kvp_daemon default
+    rc-update add hv_vss_daemon default
 fi
 
 /usr/libexec/rc/bin/einfo Configuring firewall
