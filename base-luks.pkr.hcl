@@ -69,15 +69,12 @@ source "hyperv-iso" "vm" {
     "setup-ntp chrony<enter><wait6>",
     "setup-apkrepos -1<enter><wait>",
     "setup-sshd openssh<enter><wait>",
-    "apk add --no-cache hvtools<enter><wait>",
-    "rc-service hv_fcopy_daemon start<enter><wait>",
-    "rc-service hv_kvp_daemon start<enter><wait>",
-    "rc-service hv_vss_daemon start<enter><wait>",
     "adduser packer<enter><wait>",
     "${local.packer_pwd}<enter><wait>",
     "${local.packer_pwd}<enter><wait>",
     "apk add --no-cache doas<enter><wait>",
-    "echo 'permit nopass packer' >> /etc/doas.d/paker.conf<enter><wait>"
+    "echo 'permit nopass packer' >> /etc/doas.d/paker.conf<enter><wait>",
+    "apk add --no-cache hvtools && rc-service hv_kvp_daemon start<enter>"
   ]
 }
 

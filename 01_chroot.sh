@@ -10,11 +10,15 @@ install -m 0755 /tmp/05_users /etc/grub.d/05_users
 sed -i -e 's/\(title.*CLASS\}\)/\1 --unrestricted/' /etc/grub.d/10_linux
 grub-mkconfig -o /boot/grub/grub.cfg
 
-/usr/libexec/rc/bin/einfo Enabling Hyper-V guest tools
-apk add --no-cache hvtools
-rc-update add hv_fcopy_daemon default
-rc-update add hv_kvp_daemon default
-rc-update add hv_vss_daemon default
+apk add virt-what
+# Hyper-V
+if "$(virt-what)" == 'hyperv'; then
+    /usr/libexec/rc/bin/einfo Enabling Hyper-V guest tools
+    apk add --no-cache hvtools
+    rc-service hv_fcopy_daemon start
+    rc-service hv_kvp_daemon start
+    rc-service hv_vss_daemon start
+fi
 
 /usr/libexec/rc/bin/einfo Configuring firewall
 apk add --no-cache iproute2 nftables
