@@ -55,20 +55,6 @@ mount -t proc /proc /mnt/proc
 mount --rbind /dev /mnt/dev
 mount --make-rslave /mnt/dev
 mount --rbind /sys /mnt/sys
+mount --bind /tmp /mnt/tmp
 
-install -m 750 /tmp/01_chroot.sh /mnt/tmp/01_chroot.sh
-cp /tmp/openfortivpn.conf /mnt/tmp/
-cp /tmp/nftables.nft /mnt/tmp/
-cp /tmp/10-bashrc.sh /mnt/tmp/
-cp /tmp/05_users /mnt/tmp/
-chroot /mnt /tmp/01_chroot.sh
-
-echo 'Unmounting partitions'
-umount -l /mnt/dev
-umount -l /mnt/proc
-umount -l /mnt/sys
-umount /mnt/boot/efi
-umount /mnt/boot
-umount /mnt
-vgchange -a n
-cryptsetup close lvmcrypt
+chmod +x /tmp/*.sh

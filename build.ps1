@@ -1,15 +1,16 @@
 [CmdletBinding()]
 param (
-    [switch]$Debug0
+    [switch]$Debug0,
+    [string]$VmName = 'packer-fortress2'
 )
 
 packer init base-luks.pkr.hcl
 packer validate base-luks.pkr.hcl
 
-$vm = Get-VM packer-fortress -ErrorAction SilentlyContinue
+$vm = Get-VM $VmName -ErrorAction SilentlyContinue
 if ($null -ne $vm) {
-    Stop-VM packer-fortress -Force
-    Remove-VM packer-fortress -Force
+    Stop-VM $VmName -Force
+    Remove-VM $VmName -Force
     Remove-Item .\output-vm\ -Recurse -Force
 }
 
@@ -25,10 +26,13 @@ if ($Debug0) {
     $env:ROOT_PWD = 'prouto'
 }
 
-packer build .\base-luks.pkr.hcl
+packer build -timestamp-ui -var vm_name=$VmName .\base-luks.pkr.hcl
 
+if ($LastExitCode -eq 0) {
 $vmGuid = Get-Item '.\output-vm\Virtual Machines\*.vmcx' `
     | Sort-Object LastWriteTime `
-    |Select-Object -First 1 -ExpandProperty Name
+    | Select-Object -First 1 -ExpandProperty Name
 
 Import-VM -Path ".\output-vm\Virtual Machines\$vmGuid" -Register
+Start-VM $VmName
+}
