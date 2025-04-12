@@ -4,6 +4,10 @@ packer {
       source  = "github.com/hashicorp/hyperv"
       version = "~> 1"
     }
+    vmware = {
+      version = "~> 1"
+      source = "github.com/hashicorp/vmware"
+    }
   }
 }
 
@@ -51,9 +55,14 @@ local "packer_pwd" {
   sensitive = true
 }
 
+locals {
+  iso_url      = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-virt-3.21.3-x86_64.iso"
+  iso_checksum = "sha256:f28171c35bbf623aa3cbaec4b8b29297f13095b892c1a283b15970f7eb490f2d"
+}
+
 source "hyperv-iso" "vm" {
-  iso_url                = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-virt-3.21.3-x86_64.iso"
-  iso_checksum           = "sha256:f28171c35bbf623aa3cbaec4b8b29297f13095b892c1a283b15970f7eb490f2d"
+  iso_url                = "${local.iso_url}"
+  iso_checksum           = "${local.iso_checksum}"
   enable_dynamic_memory  = false
   enable_secure_boot     = false
   secure_boot_template   = "MicrosoftUEFICertificateAuthority"
@@ -85,8 +94,42 @@ source "hyperv-iso" "vm" {
   ]
 }
 
+source "vmware-iso" "vmware-vm" {
+  iso_url                = "${local.iso_url}"
+  iso_checksum           = "${local.iso_checksum}"
+  firmware               = "efi"
+  cpus                   = "2"
+  memory                 = "256"
+  disk_size              = "512"
+  disk_adapter_type      = "nvme"
+  disk_type_id           = "0"
+  guest_os_type          = "other6xLinux64Guest"
+  network_adapter_type   = "vmxnet3"
+  vm_name                = "${var.vm_name}"
+  communicator           = "ssh"
+  ssh_username           = "packer"
+  ssh_password           = "${local.packer_pwd}"
+  ssh_disable_agent_forwarding = true
+  shutdown_command       = "poweroff"
+  boot_wait              = "5s"
+  boot_command           = [
+    "root<enter><wait>",
+    "setup-interfaces -ar<enter><wait2>",
+    "setup-ntp chrony<enter><wait6>",
+    "setup-apkrepos -1c<enter><wait>",
+    "setup-sshd openssh<enter><wait>",
+    "adduser packer<enter><wait>",
+    "${local.packer_pwd}<enter><wait>",
+    "${local.packer_pwd}<enter><wait>",
+    "apk add --no-cache doas<enter><wait>",
+    "echo 'permit nopass packer' >> /etc/doas.d/paker.conf<enter><wait>",
+    "apk add --no-cache hvtools && rc-service hv_kvp_daemon start<enter>"
+  ]
+}
+
 build {
   sources = ["sources.hyperv-iso.vm"]
+  #sources = ["sources.vmware-iso.vmware-vm"]
 
   provisioner "shell-local" {
     command = "pwsh -nol -Command \"& {Set-VMNetworkAdapter -VMName ${var.vm_name} -DhcpGuard On -RouterGuard On}\""
@@ -95,15 +138,8 @@ build {
   # copy files to the image
   provisioner "file" {
     sources = [
-      "00_install.sh",
-      "01_chroot.sh",
-      "20_secureboot.sh",
-      "90_debug.sh",
-      "99_seal.sh",
-      "nftables.nft",
-      "openfortivpn.conf",
-      "10-bashrc.sh",
-      "05_users"
+      "conf",
+      "scripts"
     ]
     destination = "/tmp/"
   }
@@ -111,24 +147,25 @@ build {
   # set variables
   provisioner "shell" {
     inline = [
-      "sed -i 's/__LUKS__/${var.luks_pwd}/g' /tmp/00_install.sh",
-      "sed -i 's/__FORTI_DNS__/${var.forti_dns}/' /tmp/openfortivpn.conf",
-      "sed -i 's/__FORTI_USERNAME__/${var.forti_username}/' /tmp/openfortivpn.conf",
-      "sed -i 's/__ROOT_PWD__/${var.root_pwd}/' /tmp/01_chroot.sh",
+      "sed -i 's/__LUKS__/${var.luks_pwd}/g' /tmp/scripts/00_install.sh",
+      "sed -i 's/__FORTI_DNS__/${var.forti_dns}/' /tmp/conf/openfortivpn.conf",
+      "sed -i 's/__FORTI_USERNAME__/${var.forti_username}/' /tmp/conf/openfortivpn.conf",
+      "sed -i 's/__ROOT_PWD__/${var.root_pwd}/' /tmp/scripts/01_chroot.sh",
       "doas apk add grub",
       "p=$(echo -e \"${var.grub_pwd}\n${var.grub_pwd}\" | grub-mkpasswd-pbkdf2 | grep ^PBKDF2 | awk '{print $7}')",
-      "sed -i \"s/__GRUB_PWD__/$p/g\" /tmp/05_users",
-      "chmod +x /tmp/00_install.sh",
+      "sed -i \"s/__GRUB_PWD__/$p/g\" /tmp/conf/05_users",
+      "chmod +x /tmp/scripts/*.sh",
     ]
   }
 
   # execute installation scripts
   provisioner "shell" {
     inline = [
-      "doas /tmp/00_install.sh",
-      "doas chroot /mnt /tmp/01_chroot.sh",
-      "doas chroot /mnt /tmp/90_debug.sh",
-      "doas /tmp/99_seal.sh"
+      "doas /tmp/scripts/00_install.sh",
+      "doas chroot /mnt /tmp/scripts/01_chroot.sh",
+      "doas /tmp/scripts/20_secureboot.sh",
+      "doas chroot /mnt /tmp/scripts/90_debug.sh",
+      "doas /tmp/scripts/99_seal.sh"
     ]
   }
 }

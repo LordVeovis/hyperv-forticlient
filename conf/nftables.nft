@@ -21,6 +21,7 @@ table ip firewall {
         iifname $IF_HOME oifname $IF_VPN ip daddr $NET_CORP icmp type { echo-request } counter accept
         iifname $IF_HOME oifname $IF_VPN ip daddr $NET_CORP tcp dport 3389 counter accept
         iifname $IF_HOME oifname $IF_VPN ip daddr $NET_CORP udp dport 3389 counter accept
+        #iifname $IF_HOME oifname $IF_VPN ip daddr $NET_CORP tcp dport 445 counter accept
     }
 
     chain postrouting {

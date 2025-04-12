@@ -7,7 +7,7 @@ param (
 packer init base-luks.pkr.hcl
 packer validate base-luks.pkr.hcl
 
-$vm = Get-VM $VmName -ErrorAction SilentlyContinue
+$vm = hyper-v\Get-VM $VmName -ErrorAction SilentlyContinue
 if ($null -ne $vm) {
     Stop-VM $VmName -Force
     Remove-VM $VmName -Force
