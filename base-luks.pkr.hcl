@@ -14,34 +14,31 @@ packer {
 variable "luks_pwd" {
     type        = string
     description = "Password to unlock the LUKS partition"
-    default     = env("LUKS_PWD")
     sensitive   = true
 }
 
 variable "grub_pwd" {
     type        = string
     description = "Password to unlock GRUB superuser"
-    default     = env("GRUB_PWD")
     sensitive   = true
 }
 
 variable "root_pwd" {
     type = string
     description = "Linux root user password"
-    default     = env("ROOT_PWD")
     sensitive   = true
 }
 
 variable "forti_username" {
   type        = string
   description = "Default username for OpenFortiVPN"
-  default     = env("FORTI_USER")
+  default     = "invalid_user"
 }
 
 variable "forti_dns" {
   type        = string
   description = "VPN server hostname"
-  default     = env("FORTI_DNS")
+  default     = "vpn.example.net"
 }
 
 variable "vm_name" {
@@ -76,7 +73,6 @@ source "hyperv-iso" "vm" {
   ssh_username           = "packer"
   ssh_password           = "${local.packer_pwd}"
   ssh_disable_agent_forwarding = true
-  shutdown_command       = "doas poweroff"
   boot_wait              = "5s"
   boot_keygroup_interval = "20ms"
   boot_command           = [
@@ -110,7 +106,6 @@ source "vmware-iso" "vmware-vm" {
   ssh_username           = "packer"
   ssh_password           = "${local.packer_pwd}"
   ssh_disable_agent_forwarding = true
-  shutdown_command       = "poweroff"
   boot_wait              = "5s"
   boot_command           = [
     "root<enter><wait>",
@@ -154,7 +149,7 @@ build {
       "doas apk add grub",
       "p=$(echo -e \"${var.grub_pwd}\n${var.grub_pwd}\" | grub-mkpasswd-pbkdf2 | grep ^PBKDF2 | awk '{print $7}')",
       "sed -i \"s/__GRUB_PWD__/$p/g\" /tmp/conf/05_users",
-      "chmod +x /tmp/scripts/*.sh",
+      "chmod +x /tmp/scripts/*.sh"
     ]
   }
 
@@ -167,5 +162,17 @@ build {
       "doas chroot /mnt /tmp/scripts/90_debug.sh",
       "doas /tmp/scripts/99_seal.sh"
     ]
+  }
+
+  provisioner "shell" {
+    expect_disconnect = true
+    pause_after = "4s"
+    inline = [
+      "doas reboot",
+    ]
+  }
+
+  provisioner "shell-local" {
+    command = "pwsh -nol -File mokmok.ps1"
   }
 }

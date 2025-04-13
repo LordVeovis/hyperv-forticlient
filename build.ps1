@@ -5,6 +5,11 @@ param (
 )
 
 packer init base-luks.pkr.hcl
+
+$env:PKR_VAR_luks_pwd = [Guid]::NewGuid().ToString("B")
+$env:PKR_VAR_grub_pwd = [Guid]::NewGuid().ToString("B")
+$env:PKR_VAR_root_pwd = [Guid]::NewGuid().ToString("B")
+
 packer validate base-luks.pkr.hcl
 
 $vm = hyper-v\Get-VM $VmName -ErrorAction SilentlyContinue
@@ -14,25 +19,21 @@ if ($null -ne $vm) {
     Remove-Item .\output-vm\ -Recurse -Force
 }
 
-$env:LUKS_PWD = 'Kelp-Lumpiness6-Fondling'
-$env:GRUB_PWD = [Guid]::NewGuid().ToString()
-$env:ROOT_PWD = [Guid]::NewGuid().ToString()
-$env:FORTI_DNS = 'vpn.invalid.lan'
-$env:FORTI_USER = 'itsamemario'
-
 if ($Debug0) {
-    $env:LUKS_PWD = 'proute'
-    $env:GRUB_PWD = 'prouty'
-    $env:ROOT_PWD = 'prouto'
+    $env:PKR_VAR_luks_pwd = 'proute'
+    $env:PKR_VAR_grub_pwd = 'prouty'
+    $env:PKR_VAR_root_pwd = 'prouto'
 }
 
-packer build -timestamp-ui -var vm_name=$VmName .\base-luks.pkr.hcl
+$env:PKR_VAR_vm_name = $VmName
+
+packer build -on-error=ask -timestamp-ui .\base-luks.pkr.hcl
 
 if ($LastExitCode -eq 0) {
-$vmGuid = Get-Item '.\output-vm\Virtual Machines\*.vmcx' `
-    | Sort-Object LastWriteTime `
-    | Select-Object -First 1 -ExpandProperty Name
+    $vmGuid = Get-Item '.\output-vm\Virtual Machines\*.vmcx' `
+        | Sort-Object LastWriteTime `
+        | Select-Object -First 1 -ExpandProperty Name
 
-Import-VM -Path ".\output-vm\Virtual Machines\$vmGuid" -Register
-Start-VM $VmName
+    Import-VM -Path ".\output-vm\Virtual Machines\$vmGuid" -Register
+    Start-VM $VmName
 }
