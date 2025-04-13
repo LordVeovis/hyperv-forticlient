@@ -34,6 +34,6 @@ if ($LastExitCode -eq 0) {
         | Sort-Object LastWriteTime `
         | Select-Object -First 1 -ExpandProperty Name
 
-    Import-VM -Path ".\output-vm\Virtual Machines\$vmGuid" -Register
-    Start-VM $VmName
+    $vm = Import-VM -Path ".\output-vm\Virtual Machines\$vmGuid" -Register
+    $vm | Start-VM
 }
