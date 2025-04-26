@@ -1,26 +1,28 @@
-$vmName = 'packer-fortress5'
+param(
+    [String]$VMName
+)
 
-$cimVM = Get-CimInstance -Namespace root\virtualization\v2 -ClassName Msvm_ComputerSystem -Filter "ElementName='$vmName'"
+$cimVM = Get-CimInstance -Namespace root\virtualization\v2 -ClassName Msvm_ComputerSystem -Filter "ElementName='$VMName'"
 $kb = $cimVM | Get-CimAssociatedInstance -ResultClassName Msvm_Keyboard
 # press any key to enter mok mgmt
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x28} | Out-Null
 Start-Sleep 1
-# go to enroll key
+# go to enroll key menu
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x28} | Out-Null
 Start-Sleep 1
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x0d} | Out-Null
 Start-Sleep 1
-# view or continue?
+# view or continue? select continue
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x28} | Out-Null
 Start-Sleep 1
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x0d} | Out-Null
 Start-Sleep 1
-# enroll key?
+# enroll key? yes
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x28} | Out-Null
 Start-Sleep 1
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x0d} | Out-Null
 Start-Sleep 1
-# password
+# type password set with mokutil
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x53} | Out-Null
 Start-Sleep -Milliseconds 250
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x44} | Out-Null
@@ -39,10 +41,11 @@ $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x4c} | Out
 Start-Sleep -Milliseconds 250
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x0d} | Out-Null
 Start-Sleep -Milliseconds 250
-# reboot?
+# reboot? yes
 $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x0d} | Out-Null
 
+# wait for the os to be initialized
 Start-Sleep 5
-$vm = Get-VM $vmName
+$vm = Get-VM $VMName
 $vm | Stop-VM
 $vm | Set-VMFirmware -EnableSecureBoot On

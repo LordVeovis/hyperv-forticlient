@@ -15,7 +15,7 @@ dpkg -x grub-efi-amd64-signed_1.202.2+2.12-1ubuntu7.1_amd64.deb _grub
 install -D _grub/usr/lib/grub/x86_64-efi-signed/grubx64.efi.signed /mnt/boot/efi/EFI/boot/grubx64.efi
 
 # ===| Copy the Alpine's grub.cfg to /boot/efi/EFI/boot/ |=====================
-crypt_uuid=$(lsblk -o uuid -nd /dev/sda2)
+crypt_uuid=$(lsblk -Q "FSTYPE=='crypto_LUKS'" -o uuid -n)
 install -D /mnt/boot/grub/grub.cfg /mnt/boot/efi/EFI/boot/grub.cfg
 sed -i -e '/insmod/d' -e '/load_video/d' -e '/initrd/a \\tboot' /mnt/boot/efi/EFI/boot/grub.cfg
 
@@ -26,7 +26,6 @@ openssl x509 -in MOK.crt -out /mnt/boot/efi/MOK.crt -outform DER
 echo -e "sdfghjkl\nsdfghjkl\n" | mokutil -i /mnt/boot/efi/MOK.crt
 mokutil -N
 efibootmgr -n 0001
-
 
 # ===| Cleaning |==============================================================
 rm MOK.key

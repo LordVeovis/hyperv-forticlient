@@ -1,16 +1,16 @@
 [CmdletBinding()]
 param (
-    [switch]$Debug0,
-    [string]$VmName = 'packer-fortress2'
+    [switch]$DebugMode,
+    [string]$VmName = 'openfortivpn-hardened'
 )
 
-packer init base-luks.pkr.hcl
+packer init openfortivpn-hardened.pkr.hcl
 
 $env:PKR_VAR_luks_pwd = [Guid]::NewGuid().ToString("B")
 $env:PKR_VAR_grub_pwd = [Guid]::NewGuid().ToString("B")
 $env:PKR_VAR_root_pwd = [Guid]::NewGuid().ToString("B")
 
-packer validate base-luks.pkr.hcl
+packer validate openfortivpn-hardened.pkr.hcl
 
 $vm = hyper-v\Get-VM $VmName -ErrorAction SilentlyContinue
 if ($null -ne $vm) {
@@ -19,7 +19,7 @@ if ($null -ne $vm) {
     Remove-Item .\output-vm\ -Recurse -Force
 }
 
-if ($Debug0) {
+if ($DebugMode) {
     $env:PKR_VAR_luks_pwd = 'proute'
     $env:PKR_VAR_grub_pwd = 'prouty'
     $env:PKR_VAR_root_pwd = 'prouto'
@@ -27,9 +27,9 @@ if ($Debug0) {
 
 $env:PKR_VAR_vm_name = $VmName
 
-packer build -on-error=ask -timestamp-ui .\base-luks.pkr.hcl
+packer build -on-error=ask -timestamp-ui openfortivpn-hardened.pkr.hcl
 
-if ($LastExitCode -eq 0) {
+if ($LastExitCode -eq 0 -and $DebugMode) {
     $vmGuid = Get-Item '.\output-vm\Virtual Machines\*.vmcx' `
         | Sort-Object LastWriteTime `
         | Select-Object -First 1 -ExpandProperty Name

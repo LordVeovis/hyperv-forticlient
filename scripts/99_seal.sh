@@ -8,5 +8,6 @@ umount -l /mnt/sys
 umount /mnt/boot/efi
 umount /mnt/boot
 umount /mnt
+
 vgchange -a n
 cryptsetup close lvmcrypt

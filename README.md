@@ -5,29 +5,27 @@ One use case, illustrated by this repository is to provide the user, on a non-tr
 
 # Features
 
-* Disk is encrypted with LUKS, including the GRUB configuration and Linux kernel (so FDE)
-* GRUB configuration is locked, only the normal boot is available
+* Disk is encrypted with LUKS, including the GRUB configuration, Linux kernel and initramfs (so FDE)
+* GRUB configuration is protected, only the normal boot is available
 * Root user is password protected
 * tty1 is reconfigured to launch the VPN client
 * Firewall configured to restrict the VPN:
     * allow only RDP on a specific network from the workstation to the VPN network
-    * deny everything else, including traffic from the VPN network to the workstation
+    * deny everything else, including traffic from the VPN network back to the workstation
+* VM has SecureBoot enabled
 
 Not implemented:
 
-* SecureBoot
-* SeLinux
+* SELinux or any other Linux security modules
 
 # Build
 
 On an elevated prompt:
 
 ```powershell
-$env:LUKS_PWD = Read-Host
-$env:GRUB_PWD = Read-Host
-$env:ROOT_PWD = Read-Host
-$env:FORTI_USER = Read-Host
-$env:FORTI_DNS = Read-Host
+$env:PKR_VAR_luks_pwd = Read-Host -Prompt "LUKS password"
+$env:PKR_VAR_forti_username = Read-Host -Prompt "OpenFortiVPN Username"
+$env:PKR_VAR_forti_dns = Read-Host -Prompt "OpenFortiVPN server"
 
 packer init base-luks.pkr.hcl
 packer build base-luks.pkr.hcl
@@ -36,6 +34,7 @@ packer build base-luks.pkr.hcl
 # Usage
 
 * Start the VM
+* Type the LUKS password
 * Get the assign IP from the VM console
 * Add the route on the host: `route add vpn_network mask vpn_mask ip_vm`
 * Type your VPN password in the VM console

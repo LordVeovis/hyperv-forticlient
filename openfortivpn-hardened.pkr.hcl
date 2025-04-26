@@ -90,7 +90,7 @@ source "hyperv-iso" "vm" {
   ]
 }
 
-source "vmware-iso" "vmware-vm" {
+source "vmware-iso" "vm" {
   iso_url                = "${local.iso_url}"
   iso_checksum           = "${local.iso_checksum}"
   firmware               = "efi"
@@ -99,34 +99,34 @@ source "vmware-iso" "vmware-vm" {
   disk_size              = "512"
   disk_adapter_type      = "nvme"
   disk_type_id           = "0"
-  guest_os_type          = "other6xLinux64Guest"
+  guest_os_type          = "other6xlinux-64"
   network_adapter_type   = "vmxnet3"
   vm_name                = "${var.vm_name}"
   communicator           = "ssh"
   ssh_username           = "packer"
   ssh_password           = "${local.packer_pwd}"
   ssh_disable_agent_forwarding = true
-  boot_wait              = "5s"
+  boot_wait              = "9s"
   boot_command           = [
     "root<enter><wait>",
     "setup-interfaces -ar<enter><wait2>",
-    "setup-ntp chrony<enter><wait6>",
+    "setup-ntp chrony<enter><wait8>",
     "setup-apkrepos -1c<enter><wait>",
-    "setup-sshd openssh<enter><wait>",
+    "setup-sshd openssh<enter><wait3>",
     "adduser packer<enter><wait>",
     "${local.packer_pwd}<enter><wait>",
     "${local.packer_pwd}<enter><wait>",
-    "apk add --no-cache doas<enter><wait>",
-    "echo 'permit nopass packer' >> /etc/doas.d/paker.conf<enter><wait>",
-    "apk add --no-cache hvtools && rc-service hv_kvp_daemon start<enter>"
+    "apk add --no-cache doas<enter><wait2>",
+    "echo 'permit nopass packer' >> /etc/doas.d/paker.conf<enter><wait>"
   ]
 }
 
 build {
   sources = ["sources.hyperv-iso.vm"]
-  #sources = ["sources.vmware-iso.vmware-vm"]
+  #sources = ["sources.vmware-iso.vm"]
 
   provisioner "shell-local" {
+    only    = ["sources.hyperv-iso.vm"]
     command = "pwsh -nol -Command \"& {Set-VMNetworkAdapter -VMName ${var.vm_name} -DhcpGuard On -RouterGuard On}\""
   }
 
@@ -173,6 +173,12 @@ build {
   }
 
   provisioner "shell-local" {
-    command = "pwsh -nol -File mokmok.ps1"
+    only    = ["sources.hyperv-iso.vm"]
+    command = "pwsh -nol -ep bypass -File mokmok.ps1 -VMName ${var.vm_name}"
+  }
+
+  provisioner "shell-local" {
+    only    = ["sources.vmware.vm"]
+    command = "pwsh -nol -ep bypass -File mokmok-vmware.ps1 -VMXPath ${var.vm_name}"
   }
 }

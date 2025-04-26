@@ -20,6 +20,10 @@ if [ "$(virt-what)" == 'hyperv' ]; then
     #rc-update add hv_fcopy_daemon default
     rc-update add hv_kvp_daemon default
     rc-update add hv_vss_daemon default
+elif [ "$(virt-what)" == 'vmware' ]; then
+    /usr/libexec/rc/bin/einfo Enabling VMware Tools
+    apk add --no-cache open-vm-tools open-vm-tools-guestinfo open-vm-tools-timesync
+    rc-update add open-vm-tools default
 fi
 
 /usr/libexec/rc/bin/einfo Configuring firewall
