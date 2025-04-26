@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param (
     [switch]$DebugMode,
+    [string]$LuksPassword,
     [string]$VmName = 'openfortivpn-hardened'
 )
 
@@ -23,6 +24,10 @@ if ($DebugMode) {
     $env:PKR_VAR_luks_pwd = 'proute'
     $env:PKR_VAR_grub_pwd = 'prouty'
     $env:PKR_VAR_root_pwd = 'prouto'
+}
+
+if ($null -ne $LuksPassword) {
+    $env:PKR_VAR_luks_pwd = $LuksPassword
 }
 
 $env:PKR_VAR_vm_name = $VmName

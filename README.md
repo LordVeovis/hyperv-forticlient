@@ -1,37 +1,35 @@
-# Description
+# OpenfortiVPN Hardened
+
+## Description
 
 This is a PoC intended to show how to build a hardened VM on Hyper-V.
 One use case, illustrated by this repository is to provide the user, on a non-trusted computer, a secured and restricted VPN connection.
 
-# Features
+## Features
 
 * Disk is encrypted with LUKS, including the GRUB configuration, Linux kernel and initramfs (so FDE)
 * GRUB configuration is protected, only the normal boot is available
 * Root user is password protected
 * tty1 is reconfigured to launch the VPN client
 * Firewall configured to restrict the VPN:
-    * allow only RDP on a specific network from the workstation to the VPN network
-    * deny everything else, including traffic from the VPN network back to the workstation
+  * allow only RDP on a specific network from the workstation to the VPN network
+  * deny everything else, including traffic from the VPN network back to the workstation
 * VM has SecureBoot enabled
 
 Not implemented:
 
 * SELinux or any other Linux security modules
 
-# Build
+## Build
 
-On an elevated prompt:
+On an elevated Powershell terminal:
 
 ```powershell
-$env:PKR_VAR_luks_pwd = Read-Host -Prompt "LUKS password"
-$env:PKR_VAR_forti_username = Read-Host -Prompt "OpenFortiVPN Username"
-$env:PKR_VAR_forti_dns = Read-Host -Prompt "OpenFortiVPN server"
-
-packer init base-luks.pkr.hcl
-packer build base-luks.pkr.hcl
+$luks = Read-Host -Prompt 'LUKS password' -AsSecureString
+build.ps1
 ```
 
-# Usage
+## Usage
 
 * Start the VM
 * Type the LUKS password
