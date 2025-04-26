@@ -26,7 +26,7 @@ On an elevated Powershell terminal:
 
 ```powershell
 $luks = Read-Host -Prompt 'LUKS password' -AsSecureString
-build.ps1
+build.ps1 -LuksPassword $luks
 ```
 
 ## Usage
