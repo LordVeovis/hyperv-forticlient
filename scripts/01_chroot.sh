@@ -40,6 +40,14 @@ chmod u+s /usr/bin/openfortivpn
 echo 'ppp_async' >> /etc/modules
 sed -ie 's!^\(tty1::respawn:\).*!\1/usr/bin/openfortivpn!' /etc/inittab
 
+/usr/libexec/rc/bin/einfo Installing OpenConnect
+apk add --no-cache openconnect
+install -m 0440 -o root -g root /tmp/conf/openconnect.conf /etc/openconnect/openconnect.conf
+echo 'vhost' >> /etc/modules
+echo 'vhost_net' >> /etc/modules
+sed -ie 's!^\(tty2::respawn:\).*!\1/usr/bin/openconnect --config=/etc/openconnect/openconnect.conf!' /etc/inittab
+
+
 /usr/libexec/rc/bin/einfo Disable ipv6
 sed -ie '/ipv6/d' /etc/modules
 

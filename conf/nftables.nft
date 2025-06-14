@@ -4,7 +4,7 @@ table ip firewall
 flush table ip firewall
 
 define IF_HOME = eth0
-define IF_VPN = ppp0
+define IF_VPN = { ppp0, tun0 }
 define NET_CORP = 10.40.240.0/20
 
 table ip firewall {

@@ -5,8 +5,8 @@ packer {
       version = "~> 1"
     }
     vmware = {
-      version = "~> 1"
       source = "github.com/hashicorp/vmware"
+      version = "~> 1"
     }
   }
 }
@@ -53,8 +53,8 @@ local "packer_pwd" {
 }
 
 locals {
-  iso_url      = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-virt-3.21.3-x86_64.iso"
-  iso_checksum = "sha256:f28171c35bbf623aa3cbaec4b8b29297f13095b892c1a283b15970f7eb490f2d"
+  iso_url      = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/x86_64/alpine-virt-3.22.0-x86_64.iso"
+  iso_checksum = "sha256:c935c3715c80ca416e2ce912c552f0cbfd8531219b7973ae4a600873c793eb1b"
 }
 
 source "hyperv-iso" "vm" {
@@ -73,6 +73,7 @@ source "hyperv-iso" "vm" {
   ssh_username           = "packer"
   ssh_password           = "${local.packer_pwd}"
   ssh_disable_agent_forwarding = true
+  #shutdown_command       = "sleep 1"
   boot_wait              = "5s"
   boot_keygroup_interval = "20ms"
   boot_command           = [
@@ -85,7 +86,7 @@ source "hyperv-iso" "vm" {
     "${local.packer_pwd}<enter><wait>",
     "${local.packer_pwd}<enter><wait>",
     "apk add --no-cache doas<enter><wait>",
-    "echo 'permit nopass packer' >> /etc/doas.d/paker.conf<enter><wait>",
+    "echo 'permit nopass packer' >> /etc/doas.d/packer.conf<enter><wait>",
     "apk add --no-cache hvtools && rc-service hv_kvp_daemon start<enter>"
   ]
 }
@@ -126,7 +127,7 @@ build {
   #sources = ["sources.vmware-iso.vm"]
 
   provisioner "shell-local" {
-    only    = ["sources.hyperv-iso.vm"]
+    only    = ["hyperv-iso.vm"]
     command = "pwsh -nol -Command \"& {Set-VMNetworkAdapter -VMName ${var.vm_name} -DhcpGuard On -RouterGuard On}\""
   }
 
@@ -145,6 +146,8 @@ build {
       "sed -i 's/__LUKS__/${var.luks_pwd}/g' /tmp/scripts/00_install.sh",
       "sed -i 's/__FORTI_DNS__/${var.forti_dns}/' /tmp/conf/openfortivpn.conf",
       "sed -i 's/__FORTI_USERNAME__/${var.forti_username}/' /tmp/conf/openfortivpn.conf",
+      "sed -i 's/__FORTI_DNS__/${var.forti_dns}/' /tmp/conf/openconnect.conf",
+      "sed -i 's/__FORTI_USERNAME__/${var.forti_username}/' /tmp/conf/openconnect.conf",
       "sed -i 's/__ROOT_PWD__/${var.root_pwd}/' /tmp/scripts/01_chroot.sh",
       "doas apk add grub",
       "p=$(echo -e \"${var.grub_pwd}\n${var.grub_pwd}\" | grub-mkpasswd-pbkdf2 | grep ^PBKDF2 | awk '{print $7}')",
@@ -173,12 +176,12 @@ build {
   }
 
   provisioner "shell-local" {
-    only    = ["sources.hyperv-iso.vm"]
+    only    = ["hyperv-iso.vm"]
     command = "pwsh -nol -ep bypass -File mokmok.ps1 -VMName ${var.vm_name}"
   }
 
   provisioner "shell-local" {
-    only    = ["sources.vmware.vm"]
+    only    = ["vmware.vm"]
     command = "pwsh -nol -ep bypass -File mokmok-vmware.ps1 -VMXPath ${var.vm_name}"
   }
 }

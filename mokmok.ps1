@@ -46,6 +46,6 @@ $kb | Invoke-CimMethod -MethodName "TypeKey" -Arguments @{ keyCode = 0x0d} | Out
 
 # wait for the os to be initialized
 Start-Sleep 5
-$vm = Get-VM $VMName
-$vm | Stop-VM
+$vm = hyper-v\Get-VM $VMName -ErrorAction Stop
+$vm | hyper-v\Stop-VM
 $vm | Set-VMFirmware -EnableSecureBoot On
