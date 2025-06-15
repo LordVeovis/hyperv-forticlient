@@ -35,10 +35,10 @@ $env:PKR_VAR_vm_name = $VmName
 packer build -on-error=ask -timestamp-ui openfortivpn-hardened.pkr.hcl
 
 if ($LastExitCode -eq 0 -and $DebugMode) {
-    $vmGuid = Get-Item '.\output-vm\Virtual Machines\*.vmcx' `
+    $vmGuid = Get-Item '.\output\hyperv\Virtual Machines\*.vmcx' `
         | Sort-Object LastWriteTime `
         | Select-Object -First 1 -ExpandProperty Name
 
-    $vm = Import-VM -Path ".\output-vm\Virtual Machines\$vmGuid" -Register
+    $vm = Import-VM -Path ".\output\hyperv\Virtual Machines\$vmGuid" -Register
     $vm | Start-VM
 }

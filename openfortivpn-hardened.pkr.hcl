@@ -73,7 +73,7 @@ source "hyperv-iso" "vm" {
   ssh_username           = "packer"
   ssh_password           = "${local.packer_pwd}"
   ssh_disable_agent_forwarding = true
-  #shutdown_command       = "sleep 1"
+  output_directory       = "output\\hyperv"
   boot_wait              = "5s"
   boot_keygroup_interval = "20ms"
   boot_command           = [
@@ -107,6 +107,7 @@ source "vmware-iso" "vm" {
   ssh_username           = "packer"
   ssh_password           = "${local.packer_pwd}"
   ssh_disable_agent_forwarding = true
+  output_directory       = "output\\vmware"
   boot_wait              = "9s"
   boot_command           = [
     "root<enter><wait>",
@@ -171,6 +172,7 @@ build {
     expect_disconnect = true
     pause_after = "4s"
     inline = [
+      "doas eject",
       "doas reboot",
     ]
   }

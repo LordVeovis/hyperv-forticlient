@@ -25,7 +25,7 @@ Not implemented:
 On an elevated Powershell terminal:
 
 ```powershell
-$luks = Read-Host -Prompt 'LUKS password' -AsSecureString
+$luks = Read-Host -Prompt 'LUKS password'
 build.ps1 -LuksPassword $luks
 ```
 
